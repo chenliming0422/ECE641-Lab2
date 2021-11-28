@@ -104,11 +104,11 @@ int main (int argc, char **argv)
         if(pixel > 255) pixel = 255;
         if(pixel < 0) pixel = 0;        
         output_img.mono[i][j] = pixel;
-        //y[i][j] = pixel;
+        y[i][j] = (double)pixel;
     }
 
     /* open output image file */
-    if ( ( fp = fopen ( "Y.tif", "wb" ) ) == NULL ) {
+    if ( ( fp = fopen ( "../output/Y.tif", "wb" ) ) == NULL ) {
         fprintf ( stderr, "cannot open file Y.tif\n");
         exit ( 1 );
     }
@@ -119,6 +119,7 @@ int main (int argc, char **argv)
         exit ( 1 );
     }
 
+/*******************************************************************************************/
     /* Initialize x <- y */
     for ( i = 0; i < input_img.height; i++ )
     for ( j = 0; j < input_img.width; j++ ) {
@@ -172,7 +173,7 @@ int main (int argc, char **argv)
     }
 
     /* open output image file */
-    if ( ( fp = fopen ( "X.tif", "wb" ) ) == NULL ) {
+    if ( ( fp = fopen ( "../output/MAPestimate1.tif", "wb" ) ) == NULL ) {
         fprintf ( stderr, "cannot open file X.tif\n");
         exit ( 1 );
     }
@@ -186,6 +187,138 @@ int main (int argc, char **argv)
     /* close output image file */
     fclose ( fp );
 
+
+/*******************************************************************************************/
+    sigma_x = 6.259*(1/5.0);  
+  
+    /* Initialize x <- y */
+    for ( i = 0; i < input_img.height; i++ )
+    for ( j = 0; j < input_img.width; j++ ) {
+        x[i][j] = y[i][j];
+    }
+
+    /* Initialize e <- y - Hx*/
+    for ( i = 0; i < input_img.height; i++ )
+    for ( j = 0; j < input_img.width; j++ ) {
+        e[i][j] = y[i][j] - circ_conv2d(x, M, N, i, j, filter);
+    }
+
+
+    for (iter = 0; iter < 20; iter++)
+    {
+        printf("start iteration %02d...", iter+1);
+        for ( i = 0; i < M; i++)
+        for ( j = 0; j < N; j++){
+            pixel_index_u = i;
+            pixel_index_v = j;
+            tmp_v = x[i][j];
+            theta_1 = circ_conv2d(e, M, N, i, j, filter);
+            theta_1 = (-1.0) * theta_1 / (sigma_w * sigma_w);
+
+            low = find_clique_min(x, M, N, i, j);
+            high = find_clique_max(x, M, N, i, j);
+            if(high < tmp_v - theta_1 / theta_2) high = tmp_v - theta_1 / theta_2;
+            if(low > tmp_v - theta_1 / theta_2) low = tmp_v - theta_1 / theta_2;
+
+            tmp_solve = solve(root_function, x, low, high, 1e-7, &err_code);
+            if(err_code == 0){
+                x[i][j] = tmp_solve;
+            }
+            else {
+                printf("err_code = %0d\n", err_code);
+            }
+            update_error(e, M, N, i, j, x[i][j] - tmp_v, filter);
+        }
+    }
+
+    for ( i = 0; i < input_img.height; i++ )
+    for ( j = 0; j < input_img.width; j++ ) {
+        pixel = (int32_t)x[i][j];
+        if(pixel > 255) pixel = 255;
+        if(pixel < 0) pixel = 0;
+        output_img.mono[i][j] = (int32_t)pixel;
+    }
+
+    /* open output image file */
+    if ( ( fp = fopen ( "../output/MAPestimate2.tif", "wb" ) ) == NULL ) {
+        fprintf ( stderr, "cannot open file X.tif\n");
+        exit ( 1 );
+    }
+    
+    /* write output image */
+    if ( write_TIFF ( fp, &output_img ) ) {
+        fprintf ( stderr, "error writing TIFF file" );
+        exit ( 1 );
+    }
+
+    /* close output image file */
+    fclose ( fp );
+
+/*******************************************************************************************/
+    sigma_x = 6.259*(5.0);
+    /* Initialize x <- y */
+    for ( i = 0; i < input_img.height; i++ )
+    for ( j = 0; j < input_img.width; j++ ) {
+        x[i][j] = y[i][j];
+    }
+
+    /* Initialize e <- y - Hx*/
+    for ( i = 0; i < input_img.height; i++ )
+    for ( j = 0; j < input_img.width; j++ ) {
+        e[i][j] = y[i][j] - circ_conv2d(x, M, N, i, j, filter);
+    }
+
+    for (iter = 0; iter < 20; iter++)
+    {
+        printf("start iteration %02d...", iter+1);
+        for ( i = 0; i < M; i++)
+        for ( j = 0; j < N; j++){
+            pixel_index_u = i;
+            pixel_index_v = j;
+            tmp_v = x[i][j];
+            theta_1 = circ_conv2d(e, M, N, i, j, filter);
+            theta_1 = (-1.0) * theta_1 / (sigma_w * sigma_w);
+
+            low = find_clique_min(x, M, N, i, j);
+            high = find_clique_max(x, M, N, i, j);
+            if(high < tmp_v - theta_1 / theta_2) high = tmp_v - theta_1 / theta_2;
+            if(low > tmp_v - theta_1 / theta_2) low = tmp_v - theta_1 / theta_2;
+
+            tmp_solve = solve(root_function, x, low, high, 1e-7, &err_code);
+            if(err_code == 0){
+                x[i][j] = tmp_solve;
+            }
+            else {
+                printf("err_code = %0d\n", err_code);
+            }
+            update_error(e, M, N, i, j, x[i][j] - tmp_v, filter);
+        }
+    }
+
+    for ( i = 0; i < input_img.height; i++ )
+    for ( j = 0; j < input_img.width; j++ ) {
+        pixel = (int32_t)x[i][j];
+        if(pixel > 255) pixel = 255;
+        if(pixel < 0) pixel = 0;
+        output_img.mono[i][j] = (int32_t)pixel;
+    }
+
+    /* open output image file */
+    if ( ( fp = fopen ( "../output/MAPestimate3.tif", "wb" ) ) == NULL ) {
+        fprintf ( stderr, "cannot open file X.tif\n");
+        exit ( 1 );
+    }
+    
+    /* write output image */
+    if ( write_TIFF ( fp, &output_img ) ) {
+        fprintf ( stderr, "error writing TIFF file" );
+        exit ( 1 );
+    }
+
+    /* close output image file */
+    fclose ( fp );
+
+/*******************************************************************************************/
     /* de-allocate space which was used for the images */   
     free_TIFF ( &(input_img) );
     free_TIFF ( &(output_img) );
@@ -269,18 +402,19 @@ double cost_function(double **y, double **x, int M, int N, double sigma_w, doubl
     double tmp_err;
     double tmp_val1 = 0.0;
     double tmp_val2 = 0.0;
+    double cost;
     for (i = 0; i < M; i++)
     for (j = 0; j < N; j++){
         tmp_err = y[i][j] - circ_conv2d(x, M, N, i, j, h);
-        tmp_val1 += pow(tmp_err, 2.0) / (2.0 * sigma_w * sigma_w);
+        tmp_val1 += pow(tmp_err, 2.0) ;
 
         for (m = 0; m < 3; m++)
         for (n = 0; n < 3; n++) {
             tmp_val2 += pow(fabs(x[i][j] - x[(i+m-1+M)%M][(j+n-1+N)%N]), p) * g[m][n];
         }
-        tmp_val2 = tmp_val2 / (p * pow(sigma_x, p));
     }
-    return (tmp_val1 + tmp_val2);
+    cost = tmp_val1 / (2.0 * sigma_w * sigma_w) + tmp_val2 / (p * pow(sigma_x, p));
+    return cost;
 }
 
 
