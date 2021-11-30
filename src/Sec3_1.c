@@ -108,7 +108,7 @@ int main (int argc, char **argv)
     }
 
     /* open output image file */
-    if ( ( fp = fopen ( "../output/Y.tif", "wb" ) ) == NULL ) {
+    if ( ( fp = fopen ( "../output/Y_subsec1.tif", "wb" ) ) == NULL ) {
         fprintf ( stderr, "cannot open file Y.tif\n");
         exit ( 1 );
     }
@@ -119,7 +119,7 @@ int main (int argc, char **argv)
         exit ( 1 );
     }
 
-/*******************************************************************************************/
+/********************************************************************************************************************************************************/
     /* Initialize x <- y */
     for ( i = 0; i < input_img.height; i++ )
     for ( j = 0; j < input_img.width; j++ ) {
@@ -173,7 +173,7 @@ int main (int argc, char **argv)
     }
 
     /* open output image file */
-    if ( ( fp = fopen ( "../output/MAPestimate1.tif", "wb" ) ) == NULL ) {
+    if ( ( fp = fopen ( "../output/MAPestimate1_subsec1.tif", "wb" ) ) == NULL ) {
         fprintf ( stderr, "cannot open file X.tif\n");
         exit ( 1 );
     }
@@ -188,9 +188,10 @@ int main (int argc, char **argv)
     fclose ( fp );
 
 
-/*******************************************************************************************/
+/********************************************************************************************************************************************************/
     sigma_x = 6.259*(1/5.0);  
-  
+    printf("change sigma_x to %.3f, start...\n", sigma_x);
+
     /* Initialize x <- y */
     for ( i = 0; i < input_img.height; i++ )
     for ( j = 0; j < input_img.width; j++ ) {
@@ -206,7 +207,7 @@ int main (int argc, char **argv)
 
     for (iter = 0; iter < 20; iter++)
     {
-        printf("start iteration %02d...", iter+1);
+        printf("start iteration %02d...\n", iter+1);
         for ( i = 0; i < M; i++)
         for ( j = 0; j < N; j++){
             pixel_index_u = i;
@@ -240,7 +241,7 @@ int main (int argc, char **argv)
     }
 
     /* open output image file */
-    if ( ( fp = fopen ( "../output/MAPestimate2.tif", "wb" ) ) == NULL ) {
+    if ( ( fp = fopen ( "../output/MAPestimate2_subsec1.tif", "wb" ) ) == NULL ) {
         fprintf ( stderr, "cannot open file X.tif\n");
         exit ( 1 );
     }
@@ -254,8 +255,10 @@ int main (int argc, char **argv)
     /* close output image file */
     fclose ( fp );
 
-/*******************************************************************************************/
+/********************************************************************************************************************************************************/
     sigma_x = 6.259*(5.0);
+    printf("change sigma_x to %.3f, start...\n", sigma_x);
+
     /* Initialize x <- y */
     for ( i = 0; i < input_img.height; i++ )
     for ( j = 0; j < input_img.width; j++ ) {
@@ -270,7 +273,7 @@ int main (int argc, char **argv)
 
     for (iter = 0; iter < 20; iter++)
     {
-        printf("start iteration %02d...", iter+1);
+        printf("start iteration %02d...\n", iter+1);
         for ( i = 0; i < M; i++)
         for ( j = 0; j < N; j++){
             pixel_index_u = i;
@@ -304,7 +307,7 @@ int main (int argc, char **argv)
     }
 
     /* open output image file */
-    if ( ( fp = fopen ( "../output/MAPestimate3.tif", "wb" ) ) == NULL ) {
+    if ( ( fp = fopen ( "../output/MAPestimate3_subsec1.tif", "wb" ) ) == NULL ) {
         fprintf ( stderr, "cannot open file X.tif\n");
         exit ( 1 );
     }
@@ -413,7 +416,7 @@ double cost_function(double **y, double **x, int M, int N, double sigma_w, doubl
             tmp_val2 += pow(fabs(x[i][j] - x[(i+m-1+M)%M][(j+n-1+N)%N]), p) * g[m][n];
         }
     }
-    cost = tmp_val1 / (2.0 * sigma_w * sigma_w) + tmp_val2 / (p * pow(sigma_x, p));
+    cost = tmp_val1 / (2.0 * sigma_w * sigma_w) + tmp_val2 / (2.0 * p * pow(sigma_x, p));
     return cost;
 }
 

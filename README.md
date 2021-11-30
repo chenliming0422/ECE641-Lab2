@@ -8,7 +8,7 @@ Platform: Windows 10. If you are using Linux, the makefile has to be modified.
 
 # Compile
 
-In "src" path, command:
+In the "src" path, command:
 
 ```
 make
@@ -18,11 +18,14 @@ Then, the .exe file will be created in "bin" folder.
 
 # Run
 
-In "bin" path, command:
+In the "bin" path, command:
+
 ```
 Sec3_1.exe img04.tif
 ```
+
 or
+
 ```
 Sec3_2.exe img04.tif
 ```
